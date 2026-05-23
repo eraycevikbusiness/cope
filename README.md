@@ -38,7 +38,7 @@ cope isn't on crates.io. pull it from github:
 
 ```toml
 [dependencies]
-cope = { git = "https://github.com/eray/cope" }
+cope = { git = "https://github.com/eraycevikbusiness/cope" }
 ```
 
 then use it like any other crate:
