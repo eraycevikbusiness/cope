@@ -49,13 +49,12 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct AppConfig {
-    token: String,
-    port: u16,
+    connection_string: String,
 }
 
 fn main() {
-    let cfg: AppConfig = read_json_from("app.json").unwrap();
-    println!("running on port {}", cfg.port);
+    let app_config: AppConfig = read_json_from("app.json").unwrap();
+    println!("my connection string:  {}", app_config.connection_string);
 }
 ```
 
@@ -63,8 +62,7 @@ with this `app.json`:
 
 ```json
 {
-  "token": "secret-abc-123",
-  "port": 8080
+  "connection_string": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;",
 }
 ```
 
@@ -72,7 +70,7 @@ handle errors properly in real code:
 
 ```rust
 match read_json_from::<AppConfig>("app.json") {
-    Ok(cfg) => println!("loaded: {}", cfg.token),
+    Ok(cfg) => println!("loaded: {}", cfg.connection_string),
     Err(e) => eprintln!("config failed: {:?}", e),
 }
 ```
