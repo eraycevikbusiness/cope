@@ -25,7 +25,7 @@ when i actually need them in real projects.
 
 | module | what it does | status |
 |--------|--------------|--------|
-| `config` | load json into a typed struct | ✅ working |
+| `config` | read/write json ↔ typed structs | ✅ working |
 | `log` | logging helpers | ⏳ planned |
 | `error` | shared error types | ⏳ planned |
 | `fs` | filesystem helpers | ⏳ planned |
@@ -44,17 +44,21 @@ cope = { git = "https://github.com/eraycevikbusiness/cope" }
 then use it like any other crate:
 
 ```rust
-use cope::config::read_json_from;
-use serde::Deserialize;
+use cope::config::{read_json_from, write_to_path};
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 struct AppConfig {
     connection_string: String,
 }
 
 fn main() {
-    let app_config: AppConfig = read_json_from("app.json").unwrap();
-    println!("my connection string:  {}", app_config.connection_string);
+    // read
+    let cfg: AppConfig = read_json_from("app.json").unwrap();
+    println!("my connection string: {}", cfg.connection_string);
+
+    // write
+    write_to_path("app.json", &cfg).unwrap();
 }
 ```
 
@@ -62,7 +66,7 @@ with this `app.json`:
 
 ```json
 {
-  "connection_string": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;",
+  "connection_string": "Server=myServerAddress;Database=myDataBase;User Id=myUsername;Password=myPassword;"
 }
 ```
 
@@ -73,12 +77,19 @@ match read_json_from::<AppConfig>("app.json") {
     Ok(cfg) => println!("loaded: {}", cfg.connection_string),
     Err(e) => eprintln!("config failed: {:?}", e),
 }
+
+match write_to_path("app.json", &cfg) {
+    Ok(()) => println!("saved"),
+    Err(e) => eprintln!("write failed: {:?}", e),
+}
 ```
 
 errors can be:
 
-- `ConfigError::PathDoesNotExist` — file not found or unreadable
-- `ConfigError::ParsingError` — file exists but the json is broken
+- `ConfigError::ReadFailed(String)` — file not found or unreadable
+- `ConfigError::WriteFailed(String)` — couldn't write to path
+- `ConfigError::Deserialize` — file exists but the json is broken
+- `ConfigError::Serialize` — the struct couldn't be serialized to json
 
 ---
 
